@@ -1,132 +1,447 @@
 # 🎥 AI Video Assistant
 
-An end-to-end AI system that turns long-form video or audio into a **searchable, conversational knowledge source**.
+An end-to-end AI application that transforms **videos and audio into searchable, structured, and conversational knowledge**.
 
-Instead of manually watching an entire meeting, lecture, interview, or tutorial, the application processes the media, generates a transcript, produces an intelligent summary, extracts actionable information, and creates a **RAG-powered chat interface** for asking questions about the content.
+The system can ingest a YouTube video or local media file, convert it into standardized audio, transcribe the content, generate intelligent insights, and build a **RAG-powered assistant** that lets users ask questions about the original content.
+
+The project provides both a **Streamlit Web UI** and a **Command-Line Interface (CLI)**.
 
 ---
 
 ## ✨ What This Project Does
 
-The AI Video Assistant transforms:
+The AI Video Assistant converts unstructured audiovisual content into structured information and an interactive knowledge source.
 
 ```text
-Video / Audio
-      ↓
-   Transcript
-      ↓
- ┌────┼───────────────┬────────────────┐
- ↓    ↓               ↓                ↓
-Title Summary     Action Items   Decisions / Questions
-                        │
-                        ↓
-                 Vector Database
-                        │
-                        ↓
-                 Semantic Search
-                        │
-                        ↓
-                  RAG Assistant
-                        │
-                        ↓
-                  User Questions
+                         VIDEO / AUDIO
+                               │
+                               ▼
+                       Audio Processing
+                               │
+                               ▼
+                         Transcription
+                               │
+                               ▼
+                           Transcript
+                               │
+              ┌────────────────┼────────────────┐
+              │                │                │
+              ▼                ▼                ▼
+         Title & Summary   Extraction      Vector Store
+                              │                │
+                              │                ▼
+                              │             ChromaDB
+                              │                │
+                              └────────┬───────┘
+                                       ▼
+                                  RAG Engine
+                                       │
+                                       ▼
+                                  Mistral LLM
+                                       │
+                                       ▼
+                              Conversational Q&A
 ```
 
-The goal is simple:
+### Core capabilities
 
-> **Convert unstructured video/audio into structured, searchable, and conversational knowledge.**
-
----
-
-# 🧠 Core Features
-
-### 🎙️ Audio & Video Processing
-
-The application accepts:
-
-* YouTube URLs
-* Local audio files
-* Local video files
-
-The media is converted into a standardized audio format before transcription.
-
-The processing pipeline converts audio to:
-
-* WAV
-* Mono channel
-* 16 kHz sample rate
-
-This standardization makes the downstream speech-recognition pipeline more predictable.
+* 🎬 YouTube video processing
+* 📁 Local audio/video processing
+* 🎙️ English transcription with Whisper
+* 🗣️ Hinglish transcription with Sarvam AI
+* 📝 Automatic transcript generation
+* 📋 AI-powered summarization
+* 🏷️ Automatic title generation
+* ✅ Action-item extraction
+* 🔑 Key-decision extraction
+* ❓ Open-question extraction
+* 🔎 Semantic search using embeddings
+* 🧠 Retrieval-Augmented Generation (RAG)
+* 💬 Conversational question answering
+* 🌐 Streamlit web interface
+* 💻 Command-line interface
 
 ---
 
-### 📝 Automatic Transcription
+# 🖥️ User Interfaces
 
-The project supports two transcription paths.
+The project currently provides **two ways to interact with the system**.
 
-**English**
+## 🌐 Streamlit Web Application
 
-Uses OpenAI Whisper locally.
+The file:
 
 ```text
-English
-   ↓
+app.py
+```
+
+provides the web interface.
+
+Launch it with:
+
+```bash
+streamlit run app.py
+```
+
+Streamlit will provide a local URL such as:
+
+```text
+http://localhost:8501
+```
+
+The web interface provides:
+
+* YouTube URL / local file input
+* Language selection
+* Analyse button
+* Pipeline status indicators
+* Generated title
+* Summary
+* Action items
+* Key decisions
+* Open questions
+* Transcript
+* RAG-based chat
+
+### Web Application Flow
+
+```text
+Browser
+   │
+   ▼
+Streamlit UI
+   │
+   ▼
+User provides video / audio
+   │
+   ▼
+Processing Pipeline
+   │
+   ├── Audio Processing
+   ├── Transcription
+   ├── Summarization
+   ├── Information Extraction
+   └── RAG Construction
+   │
+   ▼
+Results displayed in UI
+   │
+   ▼
+Chat with the processed content
+```
+
+---
+
+## 💻 Command-Line Interface
+
+The file:
+
+```text
+main.py
+```
+
+acts as the CLI entry point.
+
+Run:
+
+```bash
+python main.py
+```
+
+The application asks:
+
+```text
+Enter YouTube URL or local file path:
+Language (english/hinglish):
+```
+
+After processing, the user can continue asking questions through the terminal.
+
+### CLI Flow
+
+```text
+Terminal
+   │
+   ▼
+YouTube URL / Local File
+   │
+   ▼
+Processing Pipeline
+   │
+   ▼
+Generated Insights
+   │
+   ▼
+Interactive RAG Chat
+```
+
+---
+
+# 🏗️ System Architecture
+
+```text
+                         ┌──────────────────────┐
+                         │        USER          │
+                         └──────────┬───────────┘
+                                    │
+                   ┌────────────────┴────────────────┐
+                   │                                 │
+                   ▼                                 ▼
+          ┌─────────────────┐               ┌─────────────────┐
+          │ Streamlit Web UI│               │      CLI        │
+          │     app.py      │               │    main.py      │
+          └────────┬────────┘               └────────┬────────┘
+                   │                                 │
+                   └────────────────┬────────────────┘
+                                    ▼
+                         ┌────────────────────────┐
+                         │    Audio Processor     │
+                         │ utils/audio_processor  │
+                         └────────────┬───────────┘
+                                      │
+                                      ▼
+                         ┌────────────────────────┐
+                         │      Transcriber       │
+                         │     core/transcriber   │
+                         └────────────┬───────────┘
+                                      │
+                                      ▼
+                              ┌──────────────┐
+                              │  Transcript  │
+                              └──────┬───────┘
+                                     │
+                   ┌─────────────────┼──────────────────┐
+                   │                 │                  │
+                   ▼                 ▼                  ▼
+           ┌──────────────┐ ┌──────────────┐ ┌──────────────────┐
+           │  Summarizer  │ │   Extractor  │ │   Vector Store   │
+           │              │ │              │ │                  │
+           │ • Title      │ │ • Actions    │ │ • Chunking       │
+           │ • Summary    │ │ • Decisions  │ │ • Embeddings     │
+           │              │ │ • Questions  │ │ • ChromaDB       │
+           └──────────────┘ └──────────────┘ └────────┬─────────┘
+                                                     │
+                                                     ▼
+                                           ┌──────────────────┐
+                                           │    RAG Engine    │
+                                           │ core/rag_engine  │
+                                           └─────────┬────────┘
+                                                     │
+                                                     ▼
+                                           ┌──────────────────┐
+                                           │   Mistral LLM    │
+                                           └─────────┬────────┘
+                                                     │
+                                                     ▼
+                                           ┌──────────────────┐
+                                           │ Conversational AI│
+                                           └──────────────────┘
+```
+
+---
+
+# 🔄 End-to-End Project Flow
+
+The complete pipeline works as follows:
+
+```text
+1. User provides a YouTube URL or local media file
+                         ↓
+2. Media is downloaded / read
+                         ↓
+3. Audio is converted to WAV
+                         ↓
+4. Audio is normalized
+   • Mono
+   • 16 kHz
+                         ↓
+5. Audio is split into manageable chunks
+                         ↓
+6. Speech is transcribed
+   • English  → Whisper
+   • Hinglish → Sarvam AI
+                         ↓
+7. Complete transcript is generated
+                         ↓
+8. Transcript is used for title generation
+                         ↓
+9. Transcript is summarized
+                         ↓
+10. Action items are extracted
+                         ↓
+11. Key decisions are extracted
+                         ↓
+12. Open questions are extracted
+                         ↓
+13. Transcript is split into smaller semantic chunks
+                         ↓
+14. Chunks are converted into vector embeddings
+                         ↓
+15. Embeddings are stored in ChromaDB
+                         ↓
+16. Retriever searches for relevant transcript chunks
+                         ↓
+17. Retrieved context is provided to Mistral
+                         ↓
+18. Mistral generates a grounded answer
+```
+
+---
+
+# 🎙️ 1. Audio & Video Processing
+
+The first stage is responsible for converting different media sources into a standard format.
+
+### YouTube input
+
+```text
+YouTube URL
+     ↓
+    yt-dlp
+     ↓
+Downloaded audio
+```
+
+### Local file input
+
+```text
+Local Audio / Video
+        ↓
+   Pydub + FFmpeg
+        ↓
+      WAV Audio
+```
+
+The project then standardizes the audio to:
+
+```text
+WAV
+Mono channel
+16 kHz sample rate
+```
+
+Finally, long audio is split into smaller chunks.
+
+### Why normalize audio?
+
+Different media files can have different formats, sample rates, channels, and encodings.
+
+Standardization gives the transcription layer a predictable input format.
+
+### Why chunk the audio?
+
+Processing very long recordings as one huge input can increase memory usage and make speech recognition harder to manage.
+
+Chunking allows the system to process long recordings incrementally.
+
+---
+
+# 📝 2. Speech Transcription
+
+The transcription layer chooses an engine based on the selected language.
+
+## English
+
+```text
+Audio Chunk
+    ↓
 Whisper
-   ↓
-Transcript
-```
-
-**Hinglish**
-
-Uses Sarvam AI's speech-to-text translation API.
-
-```text
-Hinglish
-   ↓
-Sarvam AI
-   ↓
+    ↓
 English Transcript
 ```
 
-The project processes long recordings in chunks rather than attempting to process the entire recording at once.
+Whisper runs locally, which avoids requiring an external speech-recognition API for the English path.
 
----
-
-### 🧾 AI Summary
-
-The transcript is split into smaller sections using a recursive text splitter.
-
-Each section is summarized first, and the partial summaries are then combined into a final meeting-style summary.
+## Hinglish
 
 ```text
-Long Transcript
-      ↓
- Text Splitting
-      ↓
-┌─────┼─────┬─────┐
-↓     ↓     ↓     ↓
-C1    C2    C3   ...
-↓     ↓     ↓
-S1    S2    S3
-└─────┼─────┘
-      ↓
-Combined Summary
+Audio Chunk
+    ↓
+Sarvam AI
+    ↓
+English Transcript
 ```
 
-### Why use this approach?
-
-Large transcripts may be too long to send to an LLM in a single request.
-
-The map → combine strategy allows the application to handle larger transcripts while maintaining a coherent final summary.
+The Sarvam path is used to handle Hinglish speech and translate it into English while transcribing.
 
 ---
 
-### 🎯 Action Item Extraction
+# 🧾 3. Transcript Processing
 
-The system identifies tasks mentioned in the transcript and attempts to extract:
+Once the complete transcript is available, the system sends it through several downstream tasks.
 
-* Task description
-* Responsible person
+```text
+                    Transcript
+                         │
+          ┌──────────────┼──────────────┐
+          ▼              ▼              ▼
+      Summarizer      Extractor     Vector Store
+          │              │              │
+          ▼              ▼              ▼
+       Summary      Structured      Embeddings
+        Title        Insights          │
+                                        ▼
+                                      ChromaDB
+```
+
+This design keeps each responsibility separate.
+
+---
+
+# 🧠 4. AI Summarization
+
+The summarization system uses a **map → combine** approach.
+
+```text
+                 Full Transcript
+                        ↓
+                Text Splitting
+                        ↓
+            ┌───────────┼───────────┐
+            ▼           ▼           ▼
+          Chunk 1     Chunk 2     Chunk N
+            │           │           │
+            ▼           ▼           ▼
+         Summary 1   Summary 2   Summary N
+            └──────────┼──────────┘
+                       ▼
+                Combined Summary
+```
+
+### Why use this architecture?
+
+A large transcript may be too big to efficiently process in one LLM request.
+
+Breaking the transcript into pieces allows the system to process larger recordings and then combine the partial results.
+
+---
+
+# 🏷️ 5. Title Generation
+
+The application also generates a short professional title based on the transcript.
+
+Example:
+
+```text
+Input:
+Long technical discussion about deploying an AI application
+
+Output:
+"AI Application Deployment Strategy"
+```
+
+This makes generated results easier to organize and identify.
+
+---
+
+# ✅ 6. Action Item Extraction
+
+The extractor identifies tasks discussed during the conversation.
+
+For each action item, the system attempts to identify:
+
+* Task
+* Owner
 * Deadline
 
 Example:
@@ -137,143 +452,158 @@ Example:
    Deadline: Friday
 ```
 
-This transforms a transcript from a passive record into an actionable work document.
+This transforms a transcript into an actionable work summary.
 
 ---
 
-### 🔑 Key Decision Extraction
+# 🔑 7. Key Decision Extraction
 
-The application identifies important decisions made during the meeting or discussion.
+The system identifies decisions made during a meeting or discussion.
 
 Example:
 
 ```text
 1. The team decided to use PostgreSQL.
-2. The launch was moved to next Monday.
+2. Deployment will happen next Monday.
 ```
 
-This is useful because decisions are often buried inside long conversations.
+This prevents important decisions from being buried inside a long transcript.
 
 ---
 
-### ❓ Open Question Extraction
+# ❓ 8. Open Question Extraction
 
-The system also identifies unresolved questions or subjects that require follow-up.
+The system identifies unresolved questions and topics requiring follow-up.
 
 Example:
 
 ```text
-1. Who will handle the deployment?
+1. Who will handle deployment?
 2. What is the final API cost?
-3. When will the testing phase begin?
+3. When will testing begin?
 ```
 
-This creates a quick "what still needs to be answered?" view of the conversation.
+This provides a concise list of remaining discussion points.
 
 ---
 
-# 🔎 RAG-Powered Video Chat
+# 🔎 9. Vector Embeddings
 
-One of the main features of this project is the ability to **ask questions about the processed video**.
-
-Instead of sending the entire transcript to the language model every time, the transcript is converted into vector embeddings and stored in ChromaDB.
+To make the transcript searchable, it is divided into smaller text chunks.
 
 ```text
 Transcript
-    ↓
-Text Chunking
-    ↓
+     ↓
+Recursive Text Splitting
+     ↓
+Text Chunks
+     ↓
+HuggingFace Embeddings
+     ↓
+Vector Representations
+```
+
+The project uses:
+
+```text
+all-MiniLM-L6-v2
+```
+
+for generating embeddings.
+
+---
+
+# 🗄️ 10. ChromaDB Vector Store
+
+The generated embeddings are stored in ChromaDB.
+
+```text
+Transcript Chunks
+       ↓
 Embeddings
-    ↓
+       ↓
 ChromaDB
-    ↓
-Similarity Search
-    ↓
-Relevant Transcript Chunks
-    ↓
-Mistral LLM
-    ↓
-Answer
+```
+
+The local persistent storage directory is:
+
+```text
+vector_db/
+```
+
+### Why use a vector database?
+
+Normal keyword search may fail when two pieces of text express the same idea using different words.
+
+For example:
+
+```text
+Question:
+"What did they decide about infrastructure?"
+```
+
+The transcript might say:
+
+```text
+"We decided to migrate the backend to AWS."
+```
+
+Semantic embeddings allow the system to recognize the relationship between the query and the relevant transcript content.
+
+---
+
+# 🧠 11. Retrieval-Augmented Generation
+
+The RAG layer connects semantic retrieval with the language model.
+
+```text
+                    User Question
+                         │
+                         ▼
+                  Semantic Retriever
+                         │
+                         ▼
+              Relevant Transcript Chunks
+                         │
+                         ▼
+                  Context + Question
+                         │
+                         ▼
+                    Mistral LLM
+                         │
+                         ▼
+                    Final Answer
 ```
 
 ### Why RAG?
 
-Suppose a two-hour meeting contains thousands of words.
+The language model should answer questions using the contents of the processed video rather than relying solely on general knowledge.
 
-A user might ask:
-
-> "What did the team decide about deployment?"
-
-Searching the vector database allows the system to retrieve only the transcript sections related to deployment.
-
-The language model then answers the question using that retrieved context.
-
-This is the core **Retrieval-Augmented Generation (RAG)** pattern.
+The retriever supplies the relevant transcript context before the answer is generated.
 
 ---
 
-# 🏗️ System Architecture
+# 💬 12. Conversational Video Assistant
+
+After processing a video, the user can ask questions such as:
 
 ```text
-                         ┌──────────────────────┐
-                         │        User          │
-                         │ YouTube / Local File │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                     ┌─────────────────────────┐
-                     │    Audio Processor      │
-                     │          utils/         │
-                     │                         │
-                     │ • Download media        │
-                     │ • Convert to WAV        │
-                     │ • Normalize audio       │
-                     │ • Chunk audio           │
-                     └────────────┬────────────┘
-                                  │
-                                  ▼
-                     ┌─────────────────────────┐
-                     │      Transcriber        │
-                     │         core/           │
-                     │                         │
-                     │ English → Whisper       │
-                     │ Hinglish → Sarvam AI    │
-                     └────────────┬────────────┘
-                                  │
-                                  ▼
-                         ┌─────────────────┐
-                         │    Transcript   │
-                         └────────┬────────┘
-                                  │
-                 ┌────────────────┼─────────────────┐
-                 │                │                 │
-                 ▼                ▼                 ▼
-        ┌────────────────┐ ┌───────────────┐ ┌────────────────┐
-        │ Summarizer     │ │ Extractor     │ │ Vector Store   │
-        │                │ │               │ │                │
-        │ Title          │ │ Actions       │ │ Embeddings     │
-        │ Summary        │ │ Decisions     │ │ ChromaDB       │
-        │                │ │ Questions     │ │                │
-        └────────────────┘ └───────────────┘ └───────┬────────┘
-                                                     │
-                                                     ▼
-                                           ┌──────────────────┐
-                                           │    RAG Engine    │
-                                           │                  │
-                                           │ Retrieve relevant│
-                                           │ transcript chunks│
-                                           └─────────┬────────┘
-                                                     │
-                                                     ▼
-                                           ┌──────────────────┐
-                                           │   Mistral LLM    │
-                                           └─────────┬────────┘
-                                                     │
-                                                     ▼
-                                           ┌──────────────────┐
-                                           │   User Answer    │
-                                           └──────────────────┘
+"What were the main decisions?"
 ```
+
+```text
+"Who was responsible for the deployment?"
+```
+
+```text
+"What technologies were discussed?"
+```
+
+```text
+"What problems did the team identify?"
+```
+
+The RAG pipeline retrieves the relevant transcript context and uses Mistral to generate the answer.
 
 ---
 
@@ -305,178 +635,139 @@ AI-Video-Assistant/
 
 # 📦 Module Responsibilities
 
-### `main.py`
+## `app.py`
 
-The main command-line entry point.
+The Streamlit web application.
 
-It orchestrates the complete processing pipeline:
+Responsible for:
+
+* User interface
+* Input collection
+* Language selection
+* Running the pipeline
+* Displaying processing status
+* Displaying generated insights
+* Providing conversational interaction
+
+---
+
+## `main.py`
+
+The CLI entry point.
+
+Responsible for orchestrating the processing pipeline from the terminal.
 
 ```text
 Input
  ↓
-process_input()
+Audio Processing
  ↓
-transcribe_all()
+Transcription
  ↓
-generate_title()
+Title
  ↓
-summarize()
+Summary
  ↓
-extract_action_items()
+Extraction
  ↓
-extract_key_decisions()
- ↓
-extract_questions()
- ↓
-build_rag_chain()
+RAG
  ↓
 Interactive Q&A
 ```
 
 ---
 
-### `utils/audio_processor.py`
-
-Responsible for media ingestion.
-
-It handles:
-
-```text
-YouTube URL
-     ↓
-yt-dlp
-     ↓
-Audio extraction
-```
-
-and for local files:
-
-```text
-Local media
-     ↓
-Pydub + FFmpeg
-     ↓
-WAV
-```
-
-The audio is standardized to:
-
-```text
-Mono
-16 kHz
-WAV
-```
-
-Long recordings are split into manageable chunks before transcription.
-
----
-
-### `core/transcriber.py`
-
-Responsible for speech recognition.
-
-The transcription engine is selected based on the requested language:
-
-```text
-english
-   ↓
-Whisper
-```
-
-or:
-
-```text
-hinglish
-   ↓
-Sarvam AI
-```
-
----
-
-### `core/summarizer.py`
+## `utils/audio_processor.py`
 
 Responsible for:
 
-* Generating a title
-* Generating the final summary
+* YouTube audio downloading
+* Local media ingestion
+* Audio conversion
+* Audio normalization
+* Audio chunking
 
-It uses:
+Technologies:
 
-* LangChain
-* Mistral
+```text
+yt-dlp
+Pydub
+FFmpeg
+```
+
+---
+
+## `core/transcriber.py`
+
+Responsible for:
+
+* Loading Whisper
+* Transcribing English audio
+* Sending Hinglish audio to Sarvam AI
+* Combining chunk-level transcripts
+
+---
+
+## `core/summarizer.py`
+
+Responsible for:
+
+* Title generation
+* Transcript summarization
 * Recursive text splitting
+* Combining partial summaries
 
 ---
 
-### `core/extractor.py`
+## `core/extractor.py`
 
-Responsible for extracting structured information from the transcript.
+Responsible for:
 
-It identifies:
-
-```text
-Action Items
-Key Decisions
-Open Questions
-```
+* Action item extraction
+* Key decision extraction
+* Open question extraction
 
 ---
 
-### `core/vector_store.py`
+## `core/vector_store.py`
 
-Responsible for converting transcript chunks into vector representations.
+Responsible for:
 
-Technology:
-
-```text
-HuggingFace Embeddings
-        ↓
-all-MiniLM-L6-v2
-        ↓
-ChromaDB
-```
-
-The vector database is stored locally in:
-
-```text
-vector_db/
-```
+* Transcript chunking
+* Embedding generation
+* ChromaDB creation
+* Retriever configuration
 
 ---
 
-### `core/rag_engine.py`
+## `core/rag_engine.py`
 
-Responsible for the conversational layer.
+Responsible for:
 
-It combines:
-
-```text
-Retriever
-   +
-Transcript Context
-   +
-Mistral
-```
-
-to create a RAG pipeline that answers questions using the transcript as the knowledge source.
+* Building the RAG chain
+* Retrieving relevant transcript chunks
+* Supplying context to the LLM
+* Generating answers
 
 ---
 
 # 🔧 Technology Stack
 
-| Layer                  | Technology                     |
-| ---------------------- | ------------------------------ |
-| Language               | Python                         |
-| Media Download         | yt-dlp                         |
-| Audio Processing       | Pydub + FFmpeg                 |
-| English STT            | Whisper                        |
-| Hinglish STT           | Sarvam AI                      |
-| LLM                    | Mistral                        |
-| Orchestration          | LangChain                      |
-| Text Splitting         | RecursiveCharacterTextSplitter |
-| Embeddings             | HuggingFace `all-MiniLM-L6-v2` |
-| Vector Database        | ChromaDB                       |
-| Environment Management | python-dotenv                  |
+| Layer                   | Technology                     |
+| ----------------------- | ------------------------------ |
+| Programming Language    | Python                         |
+| Web UI                  | Streamlit                      |
+| Media Download          | yt-dlp                         |
+| Audio Processing        | Pydub                          |
+| Media Processing        | FFmpeg                         |
+| English Speech-to-Text  | Whisper                        |
+| Hinglish Speech-to-Text | Sarvam AI                      |
+| LLM                     | Mistral                        |
+| LLM Framework           | LangChain                      |
+| Text Splitting          | RecursiveCharacterTextSplitter |
+| Embeddings              | HuggingFace `all-MiniLM-L6-v2` |
+| Vector Database         | ChromaDB                       |
+| Environment Variables   | python-dotenv                  |
 
 ---
 
@@ -491,9 +782,7 @@ cd AI-Video-Assistant
 
 ---
 
-## 2. Create a virtual environment
-
-This project is currently set up using Python 3.11.
+## 2. Create a Python 3.11 virtual environment
 
 ```bash
 py -3.11 -m venv venv
@@ -505,6 +794,12 @@ Activate it on Windows:
 venv\Scripts\activate
 ```
 
+Verify:
+
+```bash
+python --version
+```
+
 ---
 
 ## 3. Install dependencies
@@ -513,7 +808,7 @@ venv\Scripts\activate
 pip install -r Requirements.txt
 ```
 
-If required by the installed dependency set:
+If required:
 
 ```bash
 pip install langchain-chroma
@@ -523,9 +818,7 @@ pip install langchain-chroma
 
 ## 4. Install FFmpeg
 
-FFmpeg is required for media conversion and audio processing.
-
-Verify that it is available:
+Verify that FFmpeg is available:
 
 ```bash
 ffmpeg -version
@@ -533,7 +826,7 @@ ffmpeg -version
 
 ---
 
-## 5. Configure API keys
+## 5. Configure environment variables
 
 Create a `.env` file in the project root:
 
@@ -542,382 +835,232 @@ MISTRAL_API_KEY=your_mistral_api_key
 SARVAM_API_KEY=your_sarvam_api_key
 ```
 
-Do **not** commit `.env` to GitHub.
+Keep your API keys private.
 
-The `.env` file is excluded through `.gitignore`.
+The `.env` file is excluded from Git through `.gitignore`.
 
 ---
 
-# ▶️ Running the Application
+# ▶️ Run the Web Application
 
-Run:
+Start Streamlit with:
+
+```bash
+streamlit run app.py
+```
+
+Open the local URL provided by Streamlit, typically:
+
+```text
+http://localhost:8501
+```
+
+Then provide:
+
+```text
+YouTube URL or local file
+```
+
+Select:
+
+```text
+english
+```
+
+or:
+
+```text
+hinglish
+```
+
+and click:
+
+```text
+⚡ Analyse
+```
+
+---
+
+# ▶️ Run the CLI
+
+Alternatively:
 
 ```bash
 python main.py
 ```
 
-The application asks:
+Then enter:
 
 ```text
 Enter YouTube URL or local file path:
+```
+
+followed by:
+
+```text
 Language (english/hinglish):
 ```
 
-### Example
-
-```text
-Enter YouTube URL or local file path:
-https://www.youtube.com/watch?v=...
-
-Language (english/hinglish):
-english
-```
-
-The system then performs the complete processing pipeline.
-
 ---
 
-# 🔄 Complete Execution Flow
+# 🔐 Environment & Secrets
 
-```text
-1. Receive YouTube URL / Local File
-                ↓
-2. Download / Read Media
-                ↓
-3. Convert to WAV
-                ↓
-4. Normalize Audio
-                ↓
-5. Split into Chunks
-                ↓
-6. Transcribe Audio
-                ↓
-7. Generate Meeting Title
-                ↓
-8. Generate Summary
-                ↓
-9. Extract Action Items
-                ↓
-10. Extract Key Decisions
-                ↓
-11. Extract Open Questions
-                ↓
-12. Create Transcript Embeddings
-                ↓
-13. Store Embeddings in ChromaDB
-                ↓
-14. Start RAG Chat
-                ↓
-15. Retrieve Relevant Transcript Context
-                ↓
-16. Generate Answer with Mistral
-```
-
----
-
-# 💡 Why This Architecture?
-
-The project intentionally separates responsibilities instead of putting the entire pipeline into one Python file.
-
-### Separation of Concerns
-
-Each stage has a focused responsibility:
-
-```text
-Audio Processing
-       ↓
-Transcription
-       ↓
-LLM Processing
-       ↓
-Vector Storage
-       ↓
-Retrieval
-       ↓
-Question Answering
-```
-
-This makes the system easier to:
-
-* Debug
-* Test
-* Extend
-* Replace individual components
-* Understand during development
-
-For example, the transcription engine can be changed without redesigning the RAG layer.
-
----
-
-# 🧩 Design Decisions
-
-### Why chunk audio?
-
-Long audio files can be expensive or impractical to process as a single unit.
-
-Chunking allows the application to:
-
-* Process long recordings
-* Reduce memory pressure
-* Handle model/API limits
-* Recover from failures more easily
-
----
-
-### Why normalize audio?
-
-Different media files can have different:
-
-* Sampling rates
-* Channel counts
-* Encodings
-* Containers
-
-Converting everything into a consistent WAV representation creates a predictable input for the transcription layer.
-
----
-
-### Why use Whisper locally?
-
-Local Whisper provides an offline transcription path for English audio and avoids requiring an external speech-to-text API for that branch.
-
----
-
-### Why use Sarvam for Hinglish?
-
-Hinglish can contain a mixture of Hindi and English.
-
-The project therefore provides a separate transcription path through Sarvam AI that can translate the spoken content into English while transcribing it.
-
----
-
-### Why use Mistral?
-
-Mistral is used as the reasoning/generation layer for:
-
-```text
-Summarization
-Title Generation
-Action Item Extraction
-Decision Extraction
-Question Extraction
-RAG Answers
-```
-
-This centralizes the language-generation tasks around one LLM interface.
-
----
-
-### Why use embeddings?
-
-Traditional keyword search can miss semantically related information.
-
-For example:
-
-```text
-Question:
-"What was decided about infrastructure?"
-```
-
-The transcript might never contain the exact word:
-
-```text
-"infrastructure"
-```
-
-but may contain:
-
-```text
-"We decided to move our backend to AWS."
-```
-
-Semantic embeddings allow the retrieval system to identify that these concepts are related.
-
----
-
-### Why use RAG?
-
-The LLM should answer questions based on the actual video rather than relying only on its general knowledge.
-
-RAG provides the pattern:
-
-```text
-Question
-   ↓
-Retrieve relevant transcript
-   ↓
-Give context to LLM
-   ↓
-Generate grounded answer
-```
-
-This makes the assistant much more useful for document- and meeting-specific questions.
-
----
-
-# 🛡️ Environment & Secrets
-
-Sensitive credentials belong in:
-
-```text
-.env
-```
-
-and should never be hard-coded.
-
-Example:
+API keys should always be stored in `.env`:
 
 ```env
 MISTRAL_API_KEY=...
 SARVAM_API_KEY=...
 ```
 
-The `.env` file is excluded through:
+Never hard-code API keys directly inside Python files.
 
-```text
-.gitignore
-```
+Never commit `.env` to GitHub.
 
-Never commit API keys to a public repository.
+Generated/local files such as the virtual environment, Python cache, downloaded media, and local vector database should also remain outside version control.
 
 ---
 
 # ⚠️ Current Limitations
 
-This project is a development-oriented implementation and has several areas that can be improved.
-
 ### YouTube extraction
 
-`yt-dlp` may sometimes require an available JavaScript runtime for complete YouTube extraction support.
+YouTube extraction can depend on `yt-dlp` compatibility with YouTube's current delivery mechanisms and supported JavaScript runtimes.
 
 ### CPU transcription
 
-Whisper runs locally and can be computationally expensive on CPU, especially for long videos.
+Whisper can be computationally expensive when running locally on a CPU, particularly for long recordings.
 
-### LLM rate limits
+### API rate limits
 
-The summarization and extraction pipeline makes multiple LLM requests, so API rate limits can become a bottleneck for longer transcripts.
+Several stages use the Mistral API, including title generation, summarization, extraction, and RAG responses. Longer transcripts can therefore require multiple LLM requests.
 
-### Persistent vector storage
+### Local vector database
 
-The current implementation uses a local ChromaDB directory:
+The current implementation stores ChromaDB locally in:
 
 ```text
 vector_db/
 ```
 
-This is appropriate for local development but would need a more robust storage strategy for multi-user or production deployments.
+This is suitable for local development but would need a more robust storage architecture for a production multi-user application.
 
 ---
 
 # 🚧 Future Improvements
 
-Possible next steps include:
+Possible improvements include:
 
+* GPU-accelerated transcription
 * Streaming transcription
-* GPU-accelerated Whisper
-* Better YouTube extraction/runtime support
 * Speaker diarization
 * Timestamp-aware transcripts
-* Persistent conversation history
+* Better YouTube extraction/runtime support
+* Conversation history
 * Multi-video knowledge bases
+* Improved RAG evaluation
+* Retrieval citations with timestamps
+* Persistent user sessions
 * Authentication
-* Web-based interface improvements
 * Background processing for long videos
-* Caching of transcripts and embeddings
+* Async pipeline execution
+* Caching transcripts and embeddings
 * Production-grade vector database
-* Async processing
-* Automatic meeting minutes generation
-* Export to PDF / Markdown
-* Source citations with timestamps
-* Multi-language support
+* PDF/Markdown export
+* Additional language support
+* Cloud deployment
+* Improved UI/UX
 
 ---
 
 # 🎯 Example Use Cases
 
-This architecture can be adapted for:
+## 📚 Education
 
-### 📚 Education
+Process a lecture and ask:
 
-Upload a lecture and ask:
+> "What are the three main concepts explained in this lecture?"
 
-> "What are the three major concepts explained in this lecture?"
-
-### 🏢 Meetings
+## 🏢 Meetings
 
 Process a meeting and ask:
 
 > "What decisions were made?"
 
-### 🎤 Interviews
+## 🎤 Interviews
 
 Process an interview and ask:
 
-> "What were the candidate's main technical projects?"
+> "What projects did the candidate discuss?"
 
-### ▶️ YouTube Learning
+## ▶️ YouTube Learning
 
-Give it a technical tutorial and ask:
+Process a technical tutorial and ask:
 
-> "Explain the database architecture discussed in the video."
+> "Explain the architecture discussed in this video."
 
-### 🧑‍💻 Developer Research
+## 🧑‍💻 Developer Research
 
 Process a conference talk and ask:
 
-> "What technologies did the speaker recommend?"
+> "Which technologies were recommended?"
 
 ---
 
 # 📌 Project Philosophy
 
-The project follows a simple principle:
+The core idea behind the project is:
 
-> **Don't just transcribe information — turn it into something you can query, summarize, and act upon.**
+> **Don't just transcribe information — turn it into something you can search, summarize, understand, and interact with.**
 
-The combination of:
+The system combines:
 
 ```text
 Speech Recognition
-        +
+       +
 LLM Processing
-        +
+       +
+Information Extraction
+       +
 Embeddings
-        +
+       +
 Vector Search
-        +
+       +
 RAG
+       =
+Conversational Video Intelligence
 ```
 
-creates a complete pipeline for transforming unstructured audiovisual information into an interactive knowledge system.
+Instead of treating a video as something that must simply be watched, the project turns its content into a **queryable knowledge source**.
 
 ---
 
-# ⭐ Future Direction
+# 🔮 Future Architecture
 
-The long-term goal is to evolve this from a command-line prototype into a full production-ready AI knowledge assistant:
+The current application already provides a Streamlit interface. A future production architecture could extend the existing system with scalable backend processing, authentication, persistent storage, and deployment infrastructure.
 
 ```text
-              ┌─────────────────────┐
-              │       User          │
-              └──────────┬──────────┘
-                         ↓
-              ┌─────────────────────┐
-              │   Web Application   │
-              └──────────┬──────────┘
-                         ↓
-              ┌─────────────────────┐
-              │ Processing Pipeline │
-              └──────────┬──────────┘
-                         ↓
-              ┌─────────────────────┐
-              │ Transcript + RAG    │
-              └──────────┬──────────┘
-                         ↓
-              ┌─────────────────────┐
-              │ Conversational AI   │
-              └─────────────────────┘
+                         USER
+                           │
+                           ▼
+                  ┌─────────────────┐
+                  │  Streamlit UI   │
+                  └────────┬────────┘
+                           │
+                           ▼
+                  ┌─────────────────┐
+                  │  Backend/API    │
+                  └────────┬────────┘
+                           │
+               ┌───────────┼───────────┐
+               ▼           ▼           ▼
+          Processing    LLM Layer   Vector DB
+             │              │           │
+             └──────────────┼───────────┘
+                            ▼
+                       RAG Engine
+                            │
+                            ▼
+                     Conversational AI
 ```
 
-The current repository provides the foundation for that architecture.
+The existing project provides the foundation for this evolution.
