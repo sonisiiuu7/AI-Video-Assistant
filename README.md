@@ -8,6 +8,66 @@ The project provides both a **Streamlit Web UI** and a **Command-Line Interface 
 
 ---
 
+<!-- evaluation-status:start -->
+## Evaluation status
+
+**Software assurance and meeting isolation pass. Overall quality needs improvement under the current thresholds.**
+
+[Download the evaluation report in Word format](docs/evaluation-status.docx?raw=true)
+
+### Scope of these results
+
+These measurements describe the evaluated local implementation, including the evaluation harness and isolation fixes. Integration of those implementation changes into the default branch is pending; this section records the evaluation snapshot.
+
+The live quality run used **Sarvam-105B as both target and judge**, with ONNX MiniLM retrieval, across **12 synthetic transcripts, 49 QA examples and two synthetic speech clips**. Mistral runs requiring billing activation were skipped. The quality failures below were not caused by those skipped API calls.
+
+- **Software checks:** 76 passed, with no failures or skipped software tests.
+- **Evaluation execution:** all 175 cases were scored, with zero incomplete cases or API execution errors in the completed run.
+- **Quality gates:** 134 passed and 41 failed, for a 76.6% evaluation pass rate.
+- **Meeting isolation:** passed after applying per-analysis IDs, separate default collections, required source filters and explicit IDs on reload in the evaluated implementation.
+
+### Results by evaluation area
+
+| Evaluation area | Passed | Failed | Status |
+|---|---:|---:|---|
+| Audio preparation | 2 | 0 | PASS |
+| Transcription | 1 | 1 | Needs improvement |
+| Title generation | 11 | 1 | Needs improvement |
+| Summarization | 9 | 3 | Needs improvement |
+| Action item extraction | 1 | 11 | Needs improvement |
+| Key decision extraction | 7 | 5 | Needs improvement |
+| Open question extraction | 5 | 7 | Needs improvement |
+| Transcript retrieval | 35 | 0 | PASS |
+| Transcript question answering | 44 | 5 | Needs improvement |
+| Conversation follow ups | 2 | 0 | PASS |
+| Prompt injection robustness | 4 | 0 | PASS |
+| Meeting isolation | 1 | 0 | PASS |
+| Audio pipeline transcription | 1 | 1 | Needs improvement |
+| Audio pipeline title generation | 2 | 0 | PASS |
+| Audio pipeline summarization | 1 | 1 | Needs improvement |
+| Audio pipeline action items | 0 | 2 | Needs improvement |
+| Audio pipeline decisions | 0 | 2 | Needs improvement |
+| Audio pipeline open questions | 0 | 2 | Needs improvement |
+| Audio pipeline question answering | 8 | 0 | PASS |
+| **Total quality evaluations** | **134** | **41** | **Overall FAIL** |
+
+### What needs improvement
+
+1. **Extraction precision.** Action items passed 1 of 12 checks, decisions 7 of 12, and open questions 5 of 12. Extraction accounts for 29 of the 41 failed evaluations when audio pipeline checks are included. Define category rules explicitly, separate proposals from final decisions, remove questions answered later, and return structured fields with supporting transcript spans. Preserve `Not specified` for missing owners and deadlines.
+2. **Summary faithfulness and title relevance.** Summaries passed 9 of 12 checks; audio pipeline summaries passed 1 of 2. One summary called the deployment timeline unresolved even though the source committed to Friday. Add claim-level support checks and preserve confirmed versus pending status. Titles passed 11 of 12; verify that each title captures the main topic.
+3. **Answer reliability and speech accuracy.** Transcript Q&A passed 44 of 49 checks. One answer incorrectly refused a database question despite the transcript naming PostgreSQL. Review false refusals and use of retrieved evidence. The English speech case was flagged when `PostgreSQL` became `post-PRESQL`, despite a 7.1% word error rate; add explicit checks for technical names, dates and amounts. The Hinglish speech case passed the starter check.
+4. **Judge calibration and broader validation.** Independently review samples of passes and failures and calibrate the provisional gates. Add held-out real recordings, ambiguous follow-ups and stronger adversarial cases. Retain the isolation regressions; public multiuser hosting also needs authenticated meeting ownership checks.
+
+### How to interpret the status
+
+Software tests verify implementation contracts. Quality gates evaluate model outputs on the reference cases. A completed evaluation can fail a quality gate without an API or execution error.
+
+The 175 evaluations reuse the same starter inputs; they are not 175 independent recordings. The 76.6% figure is a **gate pass rate, not a production accuracy estimate**. The same model family served as target and judge, so independent calibration is still needed. Supplemental Ragas diagnostics used a separate three-question subset and are excluded from the 175 total.
+
+<!-- evaluation-status:end -->
+
+---
+
 ## ✨ What This Project Does
 
 The AI Video Assistant converts unstructured audiovisual content into structured information and an interactive knowledge source.
